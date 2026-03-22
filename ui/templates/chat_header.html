@@ -1,0 +1,36 @@
+<style>
+    .block-container { max-width:900px!important; margin:0 auto!important; padding:20px!important; }
+    .chat-hdr { background:#04152d; padding:14px 20px; border-radius:14px 14px 0 0; display:flex; align-items:center; gap:12px; }
+    .ch-av { width:40px;height:40px;background:linear-gradient(135deg,#4a8df8,#667eea);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px; }
+    .ch-nm { color:#fff;font-size:15px;font-weight:700; }
+    .ch-st { color:#2ed573;font-size:11px;display:flex;align-items:center;gap:5px; }
+    .ch-dot { width:6px;height:6px;background:#2ed573;border-radius:50%;animation:bk 2s infinite; }
+    @keyframes bk { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .rbar { background:#f5f7fa;padding:10px 20px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-radius:0 0 14px 14px;margin-bottom:16px; }
+    .ri { display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:#555; }
+    .ri .hl { color:#4a8df8;font-weight:700; }
+    .sep { width:1px;height:18px;background:#ddd; }
+    .pin-badge { background:rgba(74,141,248,.1);color:#4a8df8;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700; }
+    .stChatMessage { border-radius:12px!important; }
+</style>
+
+<div class="chat-hdr">
+    <div class="ch-av">🤖</div>
+    <div>
+        <div class="ch-nm">LogiBot Booking Assistant</div>
+        <div class="ch-st"><div class="ch-dot"></div> Online</div>
+    </div>
+</div>
+<div class="rbar">
+    <div class="ri">📤 <span class="hl">{{FROM_CITY}}</span> {{FROM_PIN}}</div>
+    <div class="ri">→</div>
+    <div class="ri">📥 <span class="hl">{{TO_CITY}}</span> {{TO_PIN}}</div>
+    <div class="sep"></div>
+    <div class="ri">📅 {{DATE}}</div>
+    <div class="sep"></div>
+    <div class="ri">🚚 {{SERVICE}} ({{MODE}})</div>
+    <div class="sep"></div>
+    <div class="ri">📦 {{PACKAGES}} pkg</div>
+    <div class="sep"></div>
+    <div class="ri">💰 <span class="hl">{{COST}}</span></div>
+</div>

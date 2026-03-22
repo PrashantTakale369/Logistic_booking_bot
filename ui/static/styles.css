@@ -1,0 +1,166 @@
+/* ============================================
+   LogiBot — Global Styles
+   ============================================ */
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #04152d;
+    color: #1a1a2e;
+    height: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+.page-bg {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-size: cover; background-position: center;
+    z-index: 0;
+}
+
+/* ---- HEADER ---- */
+.hdr {
+    background: transparent;
+    padding: 14px 0;
+    position: relative;
+    z-index: 2;
+}
+.hdr-inner {
+    max-width: 1200px; margin: 0 auto; padding: 0 20px;
+    display: flex; align-items: center;
+}
+.brand { display: flex; align-items: center; gap: 8px; }
+.brand-icon { font-size: 28px; }
+.brand-txt { font-size: 22px; font-weight: 900; }
+.brand-txt .w { color: #fff; }
+.brand-txt .b { color: #4a8df8; }
+
+/* ---- HERO ---- */
+.hero { background: transparent; position: relative; padding-top: 60px; padding-bottom: 140px; z-index: 1; }
+.hero-inner {
+    max-width: 1200px; margin: 0 auto; padding: 0 20px;
+    position: relative; z-index: 1;
+}
+
+/* ---- SERVICE TABS ---- */
+.tabs {
+    display: flex; background: rgba(255,255,255,.06);
+    border-radius: 10px 10px 0 0; overflow: hidden; margin-top: 12px;
+}
+.tab {
+    flex: 1; text-align: center; padding: 14px 6px 10px;
+    cursor: pointer; border-bottom: 3px solid transparent; transition: .2s;
+}
+.tab:hover { background: rgba(255,255,255,.04); }
+.tab.on { border-bottom-color: #4a8df8; }
+.tab .ti { font-size: 22px; display: block; margin-bottom: 3px; }
+.tab .tt { font-size: 10px; font-weight: 600; color: rgba(255,255,255,.5); }
+.tab.on .tt { color: #4a8df8; }
+.badge {
+    background: #ff4757; color: #fff; font-size: 7px;
+    padding: 1px 4px; border-radius: 3px; font-weight: 700;
+    vertical-align: top; margin-left: 2px;
+}
+
+/* ---- BOOKING CARD ---- */
+.card {
+    background: #fff; border-radius: 14px;
+    padding: 20px 28px 24px; box-shadow: 0 8px 30px rgba(0,0,0,.2);
+    max-width: 1200px; margin: 20px auto 0; position: relative; z-index: 2;
+}
+
+/* Route (From / To) */
+.route {
+    display: flex; border: 2px solid #e0e4ea; border-radius: 8px;
+    position: relative; margin-bottom: 16px;
+}
+.rbox { flex: 1; padding: 12px 18px; cursor: pointer; transition: .15s; }
+.rbox:first-child { border-right: 2px solid #e0e4ea; }
+.rbox:hover { background: #f8f9fc; }
+.rbox .rl { font-size: 11px; color: #888; font-weight: 600; margin-bottom: 4px; }
+.rbox input {
+    width: 100%; border: none; outline: none;
+    font-size: 26px; font-weight: 900; color: #1a1a2e; background: transparent;
+}
+.rbox input::placeholder { color: #c0c4cc; }
+.rbox .sub-input {
+    width: 100%; border: none; outline: none;
+    font-size: 12px; color: #777; background: transparent; margin-top: 3px;
+}
+.rbox .sub-input::placeholder { color: #c0c4cc; }
+.swap {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+    width: 36px; height: 36px; background: #fff; border: 2px solid #e0e4ea;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    z-index: 5; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.08);
+    font-size: 15px; color: #4a8df8; transition: .2s;
+}
+.swap:hover { background: #4a8df8; color: #fff; border-color: #4a8df8; }
+
+/* Detail Row */
+.det {
+    display: flex; border: 2px solid #e0e4ea;
+    border-radius: 8px; margin-bottom: 16px;
+}
+.dbox {
+    flex: 1; padding: 10px 16px;
+    border-right: 2px solid #e0e4ea; cursor: pointer; transition: .15s;
+}
+.dbox:last-child { border-right: none; }
+.dbox:hover { background: #f8f9fc; }
+.dbox .dl {
+    font-size: 10px; color: #888; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .5px;
+    display: flex; align-items: center; gap: 3px;
+}
+.dbox .dv { font-size: 20px; font-weight: 800; color: #1a1a2e; margin-top: 2px; }
+.dbox .ds { font-size: 11px; color: #888; }
+.dbox select,
+.dbox input[type="date"],
+.dbox input[type="number"] {
+    width: 100%; border: none; outline: none;
+    font-size: 20px; font-weight: 800; color: #1a1a2e;
+    background: transparent; margin-top: 2px; cursor: pointer;
+    -webkit-appearance: none;
+}
+.dbox select { font-size: 16px; font-weight: 700; }
+
+/* Fare Chips */
+.fares { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.fares-title { font-size: 11px; font-weight: 800; color: #1a1a2e; text-transform: uppercase; line-height: 1.2; }
+.chip {
+    border: 2px solid #e0e4ea; border-radius: 8px;
+    padding: 8px 16px; text-align: center; cursor: pointer; transition: .2s;
+}
+.chip:hover { border-color: #4a8df8; }
+.chip.on { border-color: #4a8df8; background: rgba(74,141,248,.05); }
+.chip .cn { font-size: 12px; font-weight: 700; color: #1a1a2e; }
+.chip.on .cn { color: #4a8df8; }
+.chip .cs { font-size: 9px; color: #999; }
+
+/* Protection / Insurance */
+.prot {
+    display: flex; align-items: center; justify-content: space-between;
+    border: 1px solid #e0e4ea; border-radius: 8px;
+    padding: 10px 16px; margin-bottom: 20px;
+}
+.prot-left { display: flex; align-items: center; gap: 8px; }
+.prot-left input[type=checkbox] { width: 16px; height: 16px; accent-color: #4a8df8; }
+.prot-left .pt { font-size: 13px; font-weight: 700; color: #1a1a2e; }
+.prot-left .pd { font-size: 12px; color: #777; }
+.prot-link { font-size: 12px; color: #4a8df8; font-weight: 600; cursor: pointer; }
+
+/* BOOK Button */
+.book-wrap { text-align: center; margin-top: 4px; }
+.book-btn {
+    background: linear-gradient(135deg, #4a8df8, #667eea);
+    color: #fff; font-size: 18px; font-weight: 800;
+    letter-spacing: 3px; text-transform: uppercase;
+    padding: 14px 80px; border-radius: 40px; border: none; cursor: pointer;
+    box-shadow: 0 6px 25px rgba(74,141,248,.35); transition: .2s;
+}
+.book-btn:hover {
+    box-shadow: 0 10px 35px rgba(74,141,248,.55);
+    transform: translateY(-2px);
+}
+

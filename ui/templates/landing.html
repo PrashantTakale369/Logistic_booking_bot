@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>{{CSS}}</style>
+</head>
+<body>
+
+<!-- FULL PAGE BACKGROUND -->
+<div class="page-bg" style="background-image:url('data:image/png;base64,{{BG_IMAGE}}')"></div>
+
+<!-- HEADER -->
+<div class="hdr">
+    <div class="hdr-inner">
+        <div class="brand">
+            <span class="brand-icon">📦</span>
+            <span class="brand-txt"><span class="w">Logi</span><span class="b">Bot</span></span>
+        </div>
+    </div>
+</div>
+
+
+<!-- BOOKING CARD -->
+<div class="card">
+    <!-- From / To -->
+    <div class="route">
+        <div class="rbox">
+            <div class="rl">From</div>
+            <input id="from_city" type="text" placeholder="City" value="">
+            <input class="sub-input" id="from_addr" type="text" placeholder="Address, State, PIN Code" value="">
+        </div>
+        <div class="swap" onclick="swapCities()">⇄</div>
+        <div class="rbox">
+            <div class="rl">To</div>
+            <input id="to_city" type="text" placeholder="City" value="">
+            <input class="sub-input" id="to_addr" type="text" placeholder="Address, State, PIN Code" value="">
+        </div>
+    </div>
+
+    <!-- Detail Row -->
+    <div class="det">
+        <div class="dbox">
+            <div class="dl">📅 Pickup Date</div>
+            <input type="date" id="pickup_date" value="{{TOMORROW}}" min="{{TODAY}}">
+        </div>
+        <div class="dbox">
+            <div class="dl">🚚 Service</div>
+            <select id="service">
+                <option>Standard</option>
+                <option selected>Express</option>
+                <option>Same-day</option>
+                <option>Overnight</option>
+            </select>
+            <div class="ds">Delivery speed</div>
+        </div>
+        <div class="dbox">
+            <div class="dl">🛤️ Transport</div>
+            <select id="transport">
+                <option>Road</option>
+                <option selected>Air</option>
+                <option>Rail</option>
+                <option>Sea</option>
+            </select>
+            <div class="ds">Mode of shipment</div>
+        </div>
+        <div class="dbox">
+            <div class="dl">📦 Packages</div>
+            <input type="number" id="packages" value="1" min="1" max="100">
+        </div>
+        <div class="dbox">
+            <div class="dl">⚖️ Weight (kg)</div>
+            <input type="number" id="weight" value="5" min="0.1" max="5000" step="0.5">
+        </div>
+    </div>
+
+    <!-- Special Rates -->
+    <div class="fares">
+        <span class="fares-title">Special<br>Rates</span>
+        <div class="chip on" onclick="selectChip(this)"><div class="cn">Regular</div><div class="cs">Standard rates</div></div>
+        <div class="chip" onclick="selectChip(this)"><div class="cn">Bulk</div><div class="cs">10+ parcels discount</div></div>
+        <div class="chip" onclick="selectChip(this)"><div class="cn">Corporate</div><div class="cs">Business accounts</div></div>
+        <div class="chip" onclick="selectChip(this)"><div class="cn">Fragile</div><div class="cs">Special handling</div></div>
+        <div class="chip" onclick="selectChip(this)"><div class="cn">Perishable</div><div class="cs">Cold chain</div></div>
+    </div>
+
+    <!-- BOOK Button -->
+    <div class="book-wrap">
+        <button class="book-btn" onclick="submitBooking()">START NOW</button>
+    </div>
+</div>
+
+
+<script>{{JS}}</script>
+</body>
+</html>
