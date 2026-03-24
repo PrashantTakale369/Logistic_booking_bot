@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LogiBot - Smart Parcel Booking</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<!-- Full-page background image -->
+<div class="page-bg"></div>
+
+<!-- LOGIN MODAL (shown first) -->
+<div class="login-overlay" id="login-overlay">
+    <div class="login-card">
+        <div class="login-header">
+            <img src="/assets/logo.svg" alt="LogiBot" class="login-logo">
+            <div class="login-title">Welcome to LogiBot</div>
+            <div class="login-sub">Please sign in to start booking</div>
+        </div>
+        <div class="login-body">
+            <div class="login-field">
+                <label>Name <span class="req">*</span></label>
+                <input type="text" id="login-name" placeholder="Your name" required>
+            </div>
+            <div class="login-field">
+                <label>Mobile Number <span class="req">*</span></label>
+                <input type="tel" id="login-phone" placeholder="+91 9876543210" required>
+            </div>
+            <div class="login-field">
+                <label>Email <span class="opt">(optional)</span></label>
+                <input type="email" id="login-email" placeholder="you@example.com">
+            </div>
+            <div class="login-error" id="login-error" style="display:none;"></div>
+            <button class="login-btn" onclick="doLogin()">CONTINUE</button>
+        </div>
+    </div>
+</div>
+
+<!-- Header -->
+<div class="hdr">
+    <div class="hdr-inner">
+        <div class="brand">
+            <img class="brand-logo" src="/assets/logo.svg" alt="LogiBot">
+            <span class="brand-txt"><span class="w">Logi</span><span class="b">Bot</span></span>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Card (hidden until login) -->
+<div class="card" id="booking-card" style="display:none;">
+
+    <!-- From / To -->
+    <div class="route">
+        <div class="rbox">
+            <div class="rl">From</div>
+            <input class="city-input" type="text" id="from_city" placeholder="City">
+            <input class="addr-input" type="text" id="from_addr" placeholder="Address, State, PIN Code">
+        </div>
+        <div class="swap" onclick="swapCities()" title="Swap">⇄</div>
+        <div class="rbox">
+            <div class="rl">To</div>
+            <input class="city-input" type="text" id="to_city" placeholder="City">
+            <input class="addr-input" type="text" id="to_addr" placeholder="Address, State, PIN Code">
+        </div>
+    </div>
+
+    <!-- Details row -->
+    <div class="det">
+        <div class="dbox">
+            <div class="dl">📅 Pickup Date</div>
+            <input type="date" id="pickup_date">
+            <div class="ds">Preferred pickup</div>
+        </div>
+        <div class="dbox">
+            <div class="dl">🚚 Service</div>
+            <select id="service">
+                <option value="standard">Standard</option>
+                <option value="express" selected>Express</option>
+                <option value="same_day">Same-day</option>
+                <option value="overnight">Overnight</option>
+            </select>
+            <div class="ds">Delivery speed</div>
+        </div>
+        <div class="dbox">
+            <div class="dl">🛤️ Transport</div>
+            <select id="transport">
+                <option value="road">Road</option>
+                <option value="air" selected>Air</option>
+                <option value="rail">Rail</option>
+                <option value="sea">Sea</option>
+            </select>
+            <div class="ds">Mode of shipment</div>
+        </div>
+        <div class="dbox">
+            <div class="dl">📦 Packages</div>
+            <input type="number" id="packages" value="1" min="1" max="100">
+        </div>
+        <div class="dbox">
+            <div class="dl">⚖️ Weight (kg)</div>
+            <input type="number" id="weight" value="5" min="0.1" max="5000" step="0.5">
+        </div>
+    </div>
+
+    <!-- Fare chips -->
+    <div class="fares">
+        <span class="fares-title">Special<br>Rates</span>
+        <div class="chip on" onclick="selectChip(this)"><div class="cn">Regular</div><div class="cs">Standard rates</div></div>
+        <div class="chip" onclick="selectChip(this)"><div class="cn">Bulk</div><div class="cs">10+ parcels discount</div></div>
+        <div class="chip" onclick="selectChip(this)"><div class="cn">Corporate</div><div class="cs">Business accounts</div></div>
+        <div class="chip" onclick="selectChip(this)"><div class="cn">Fragile</div><div class="cs">Special handling</div></div>
+        <div class="chip" onclick="selectChip(this)"><div class="cn">Perishable</div><div class="cs">Cold chain</div></div>
+    </div>
+
+    <!-- START NOW -->
+    <div class="book-wrap">
+        <button class="book-btn" onclick="startBooking()">START NOW</button>
+    </div>
+</div>
+
+<script>
+var tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+document.getElementById('pickup_date').value = tomorrow.toISOString().split('T')[0];
+
+// Check if already logged in
+var storedUser = sessionStorage.getItem('user');
+if (storedUser) {
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('booking-card').style.display = 'block';
+}
+
+function doLogin() {
+    var name = document.getElementById('login-name').value.trim();
+    var phone = document.getElementById('login-phone').value.trim();
+    var email = document.getElementById('login-email').value.trim();
+    var errEl = document.getElementById('login-error');
+
+    if (!name || !phone) {
+        errEl.textContent = 'Name and mobile number are required.';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    errEl.style.display = 'none';
+
+    fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, phone: phone, email: email || null })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        sessionStorage.setItem('user', JSON.stringify({
+            user_id: data.user_id,
+            name: data.name,
+            is_new: data.is_new
+        }));
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('booking-card').style.display = 'block';
+    })
+    .catch(function(err) {
+        errEl.textContent = 'Login failed: ' + err.message;
+        errEl.style.display = 'block';
+    });
+}
+
+function swapCities() {
+    var fc = document.getElementById('from_city');
+    var tc = document.getElementById('to_city');
+    var fa = document.getElementById('from_addr');
+    var ta = document.getElementById('to_addr');
+    var t1 = fc.value; fc.value = tc.value; tc.value = t1;
+    var t2 = fa.value; fa.value = ta.value; ta.value = t2;
+}
+
+function selectChip(el) {
+    document.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('on'); });
+    el.classList.add('on');
+}
+
+function startBooking() {
+    var user = JSON.parse(sessionStorage.getItem('user') || 'null');
+    if (!user) {
+        document.getElementById('login-overlay').style.display = 'flex';
+        return;
+    }
+
+    var data = {
+        from_city:      document.getElementById('from_city').value,
+        from_address:   document.getElementById('from_addr').value,
+        to_city:        document.getElementById('to_city').value,
+        to_address:     document.getElementById('to_addr').value,
+        pickup_date:    document.getElementById('pickup_date').value,
+        service_type:   document.getElementById('service').value,
+        transport_mode: document.getElementById('transport').value,
+        num_packages:   document.getElementById('packages').value,
+        weight:         document.getElementById('weight').value
+    };
+    sessionStorage.setItem('booking', JSON.stringify(data));
+    window.location.href = '/chat';
+}
+
+// Enter key on login fields
+document.getElementById('login-phone').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doLogin();
+});
+document.getElementById('login-email').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doLogin();
+});
+</script>
+
+</body>
+</html>

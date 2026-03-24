@@ -100,6 +100,11 @@ def state_updater_node(state: dict) -> dict:
         if not isinstance(result, dict):
             continue
 
+        # Handle store_field results
+        if result.get("stored") and "field" in result and "value" in result:
+            booking_data[result["field"]] = result["value"]
+            continue
+
         # Handle validation results
         if "valid" in result:
             if not result["valid"]:
@@ -135,42 +140,33 @@ def state_updater_node(state: dict) -> dict:
                 "validation_errors": [],
             }
 
-    # Also extract field values from the conversation context
-    # The LLM often mentions collected values in its messages
-    # We rely on the LLM to call tools and the tool results above
-    # to populate booking_data. For non-validated fields, we parse
-    # from the AIMessage content or tool call arguments.
-    for msg in messages[-5:]:  # check recent messages
+    # Extract field values from store_field tool calls and other tool call arguments
+    for msg in messages[-10:]:
         if isinstance(msg, AIMessage) and hasattr(msg, "tool_calls"):
             for tc in msg.tool_calls:
                 args = tc.get("args", {})
-                # Extract fields from save_booking call
-                if tc["name"] == "save_booking" and "booking_data" in args:
+                # store_field — primary mechanism for field storage
+                if tc["name"] == "store_field":
+                    fname = args.get("field_name", "")
+                    fval = args.get("field_value", "")
+                    if fname and fval:
+                        booking_data[fname] = fval
+                # save_booking
+                elif tc["name"] == "save_booking" and "booking_data" in args:
                     bd = args["booking_data"]
                     if isinstance(bd, dict):
                         booking_data.update(bd)
-                # Extract from format_summary call
-                if tc["name"] == "format_summary" and "booking_data" in args:
+                # format_summary
+                elif tc["name"] == "format_summary" and "booking_data" in args:
                     bd = args["booking_data"]
                     if isinstance(bd, dict):
                         booking_data.update(bd)
-                # Extract from calculate_shipping_rate call
-                if tc["name"] == "calculate_shipping_rate":
-                    if "origin" in args:
-                        # Map origin/dest to pickup/delivery cities
-                        pass
-                    if "transport_mode" in args:
-                        booking_data["transport_mode"] = args["transport_mode"]
-                    if "service_type" in args:
-                        booking_data["service_type"] = args["service_type"]
-                    if "weight_kg" in args:
-                        booking_data["total_weight_kg"] = args["weight_kg"]
-                    if "num_packages" in args:
-                        booking_data["num_packages"] = args["num_packages"]
-                    if "is_fragile" in args:
-                        booking_data["is_fragile"] = args["is_fragile"]
-                    if "is_perishable" in args:
-                        booking_data["is_perishable"] = args["is_perishable"]
+                # calculate_shipping_rate
+                elif tc["name"] == "calculate_shipping_rate":
+                    for k, bk in [("transport_mode", "transport_mode"), ("service_type", "service_type"),
+                                   ("weight_kg", "total_weight_kg"), ("num_packages", "num_packages")]:
+                        if k in args:
+                            booking_data[bk] = args[k]
 
     # Check if current section is complete -> advance
     if current_section in SECTION_FIELDS:

@@ -18,6 +18,51 @@ class Base(DeclarativeBase):
     pass
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(200), nullable=False)
+    phone = Column(String(20), unique=True, nullable=False, index=True)
+    email = Column(String(200), nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f"<User {self.name} ({self.phone})>"
+
+
+class ChatSession(Base):
+    __tablename__ = "chat_sessions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    session_id = Column(String(50), unique=True, nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    booking_data_json = Column(Text, default="{}")
+    current_section = Column(String(30), default="greeting")
+    booking_ref = Column(String(20), nullable=True)
+    is_complete = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    user = relationship("User", backref="sessions")
+
+    def __repr__(self):
+        return f"<ChatSession {self.session_id} ({self.current_section})>"
+
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    session_id = Column(String(50), nullable=False, index=True)
+    role = Column(String(10), nullable=False)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f"<ChatMessage {self.role} ({self.session_id})>"
+
+
 class RateCard(Base):
     __tablename__ = "rate_cards"
 

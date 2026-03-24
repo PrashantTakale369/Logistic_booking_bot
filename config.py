@@ -5,7 +5,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 # Ollama
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-MODEL_NAME = os.getenv("MODEL_NAME", "qwen2.5:3b-instruct")
+MODEL_NAME = os.getenv("MODEL_NAME", "qwen3:4b")
 
 # Database
 DB_PATH = os.getenv("DB_PATH", str(BASE_DIR / "db" / "logistics.db"))

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LogiBot - Chat</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<!-- Background -->
+<div class="page-bg"></div>
+
+<!-- Header -->
+<div class="hdr">
+    <div class="hdr-inner">
+        <div class="brand">
+            <img class="brand-logo" src="/assets/logo.svg" alt="LogiBot">
+            <span class="brand-txt"><span class="w">Logi</span><span class="b">Bot</span></span>
+        </div>
+    </div>
+</div>
+
+<!-- Center text -->
+<div class="chat-page-center">
+    <img src="/assets/logo.svg" alt="LogiBot" class="center-logo">
+    <div class="center-title">LogiBot</div>
+    <div class="center-sub">Your AI-powered logistics booking assistant</div>
+</div>
+
+<!-- Progress stepper ABOVE the widget -->
+<div class="stepper-bar" id="cw-stepper">
+        <div class="step done" data-step="shipper">
+            <div class="step-icon">📤</div>
+            <div class="step-label">Shipper</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" data-step="consignee">
+            <div class="step-icon">📥</div>
+            <div class="step-label">Consignee</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" data-step="shipment">
+            <div class="step-icon">📊</div>
+            <div class="step-label">Shipment</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" data-step="service">
+            <div class="step-icon">🚚</div>
+            <div class="step-label">Service</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" data-step="documentation">
+            <div class="step-icon">📄</div>
+            <div class="step-label">Docs</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" data-step="payment">
+            <div class="step-icon">💳</div>
+            <div class="step-label">Payment</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" data-step="additional">
+            <div class="step-icon">⚙️</div>
+            <div class="step-label">Extra</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" data-step="summary">
+            <div class="step-icon">✅</div>
+            <div class="step-label">Confirm</div>
+        </div>
+</div>
+
+<!-- Chat widget -->
+<div class="chat-widget open" id="chat-widget">
+    <!-- Header -->
+    <div class="cw-header">
+        <div class="cw-header-left">
+            <div class="cw-avatar"><img src="/assets/logo.svg" alt="Bot" style="width:24px;height:24px;"></div>
+            <div>
+                <div class="cw-name">LogiBot</div>
+                <div class="cw-status"><span class="cw-dot"></span> Online</div>
+            </div>
+        </div>
+        <div class="cw-header-right">
+            <span class="cw-back" onclick="window.location.href='/'">← Back</span>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="cw-messages" id="cw-messages"></div>
+
+    <!-- Input -->
+    <div class="cw-input-bar">
+        <input class="cw-input" type="text" id="cw-input" placeholder="Type your message..." autocomplete="off">
+        <button class="cw-send" id="cw-send" onclick="sendMessage()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+    </div>
+</div>
+
+<script>
+var sessionId = 'sess-' + Math.random().toString(36).substr(2, 12);
+var bookingData = {};
+var currentSection = 'shipper';
+var bookingRef = '';
+var user = JSON.parse(sessionStorage.getItem('user') || 'null');
+var userId = user ? user.user_id : 0;
+
+// If not logged in, redirect to landing
+if (!user) { window.location.href = '/'; }
+
+// Try to resume existing session
+(function tryResume() {
+    if (!userId) return;
+    fetch('/api/session/' + userId)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.found && data.messages && data.messages.length > 0) {
+                // Resume existing session
+                sessionId = data.session_id;
+                bookingData = data.booking_data || {};
+                currentSection = data.current_section || 'shipper';
+                bookingRef = data.booking_ref || '';
+
+                // Clear default messages and load from DB
+                document.getElementById('cw-messages').innerHTML = '';
+                data.messages.forEach(function(m) {
+                    addMessage(m.role, m.content.replace(/\n/g, '<br>'));
+                });
+                updateStepper(currentSection);
+
+                // Show route if we have addresses
+                showRouteFromData(bookingData);
+
+                // Clear the booking from sessionStorage to avoid re-init
+                sessionStorage.removeItem('booking');
+            }
+        })
+        .catch(function() { /* ignore, start fresh */ });
+})();
+
+function showRouteFromData(bd) {
+    var pickup = bd.pickup_address || '';
+    var delivery = bd.delivery_address || '';
+    if (!pickup && !delivery) return;
+    var routeEl = document.getElementById('cw-route');
+    routeEl.style.display = 'flex';
+    routeEl.innerHTML =
+        '<span>📤 <b>' + (pickup || '—') + '</b></span> → ' +
+        '<span>📥 <b>' + (delivery || '—') + '</b></span>';
+}
+
+var stored = sessionStorage.getItem('booking');
+if (stored) {
+    var d = JSON.parse(stored);
+    var fromParts = [d.from_address, d.from_city].filter(Boolean);
+    var toParts   = [d.to_address, d.to_city].filter(Boolean);
+
+    bookingData = {
+        pickup_address:   fromParts.join(', '),
+        delivery_address: toParts.join(', '),
+        pickup_date:      d.pickup_date,
+        service_type:     d.service_type,
+        transport_mode:   d.transport_mode,
+        num_packages:     parseInt(d.num_packages) || 1,
+        total_weight_kg:  parseFloat(d.weight) || 5
+    };
+
+    var fc = d.from_city || '—';
+    var tc = d.to_city || '—';
+    var svc = d.service_type ? d.service_type.replace(/_/g, ' ') : '—';
+    svc = svc.charAt(0).toUpperCase() + svc.slice(1);
+    var mode = d.transport_mode ? d.transport_mode.charAt(0).toUpperCase() + d.transport_mode.slice(1) : '—';
+
+    // Route bar
+    var routeEl = document.getElementById('cw-route');
+    routeEl.style.display = 'flex';
+    routeEl.innerHTML =
+        '<span>📤 <b>' + fc + '</b></span> → ' +
+        '<span>📥 <b>' + tc + '</b></span>' +
+        '<span class="cw-route-sep">|</span>' +
+        '<span>📅 ' + d.pickup_date + '</span>' +
+        '<span class="cw-route-sep">|</span>' +
+        '<span>🚚 ' + svc + '</span>' +
+        '<span class="cw-route-sep">|</span>' +
+        '<span>📦 ' + d.num_packages + ' pkg</span>';
+
+    addMessage('user',
+        'I want to ship a parcel from <b>' + fc + '</b> to <b>' + tc + '</b>.');
+
+    addMessage('bot',
+        "Welcome! Let's get your shipment booked. Here's what I have so far:<br><br>" +
+        '📤 <b>' + fc + '</b> → 📥 <b>' + tc + '</b><br>' +
+        '📅 ' + d.pickup_date + ' &nbsp;|&nbsp; 🚚 ' + svc + ' &nbsp;|&nbsp; 🛤️ ' + mode +
+        ' &nbsp;|&nbsp; 📦 ' + d.num_packages + ' pkg &nbsp;|&nbsp; ⚖️ ' + d.weight + 'kg<br><br>' +
+        'Now I need a few more details. Let\'s start with the <b>shipper (sender)</b>:<br><br>' +
+        'Please share the <b>shipper\'s name</b>.');
+} else {
+    addMessage('bot',
+        "Welcome to <b>LogiBot</b>! Tell me about your shipment and I'll help you book it.");
+}
+
+document.getElementById('cw-input').focus();
+
+var STEPS = ['shipper','consignee','shipment','service','documentation','payment','additional','summary','confirmed'];
+
+function updateStepper(active) {
+    if (!active) active = 'shipper';
+    var steps = document.querySelectorAll('.step[data-step]');
+    var lines = document.querySelectorAll('.step-line');
+    var activeIdx = STEPS.indexOf(active);
+    if (activeIdx === -1) activeIdx = 0;
+
+    steps.forEach(function(el, i) {
+        var stepName = el.getAttribute('data-step');
+        var stepIdx = STEPS.indexOf(stepName);
+        el.classList.remove('done', 'active', 'pending');
+        if (stepIdx < activeIdx) {
+            el.classList.add('done');
+        } else if (stepIdx === activeIdx) {
+            el.classList.add('active');
+        } else {
+            el.classList.add('pending');
+        }
+    });
+
+    lines.forEach(function(line, i) {
+        line.classList.remove('filled');
+        if (i < activeIdx) line.classList.add('filled');
+    });
+}
+updateStepper(currentSection);
+
+// Enter to send
+document.getElementById('cw-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+
+function addMessage(role, html) {
+    var el = document.createElement('div');
+    el.className = 'cw-msg ' + role;
+    var avatar = role === 'bot'
+        ? '<img src="/assets/logo.svg" alt="Bot" style="width:20px;height:20px;">'
+        : '👤';
+    el.innerHTML =
+        '<div class="cw-msg-avatar">' + avatar + '</div>' +
+        '<div class="cw-msg-bubble">' + html + '</div>';
+    var c = document.getElementById('cw-messages');
+    c.appendChild(el);
+    c.scrollTop = c.scrollHeight;
+}
+
+function showTyping() {
+    var el = document.createElement('div');
+    el.className = 'cw-msg bot'; el.id = 'typing-indicator';
+    el.innerHTML =
+        '<div class="cw-msg-avatar"><img src="/assets/logo.svg" alt="Bot" style="width:20px;height:20px;"></div>' +
+        '<div class="cw-msg-bubble"><div class="cw-typing"><span></span><span></span><span></span></div></div>';
+    var c = document.getElementById('cw-messages');
+    c.appendChild(el); c.scrollTop = c.scrollHeight;
+}
+
+function removeTyping() {
+    var t = document.getElementById('typing-indicator');
+    if (t) t.remove();
+}
+
+function sendMessage() {
+    var input = document.getElementById('cw-input');
+    var text = input.value.trim();
+    if (!text) return;
+
+    addMessage('user', text);
+    input.value = '';
+    input.disabled = true;
+    document.getElementById('cw-send').disabled = true;
+    showTyping();
+
+    fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            session_id: sessionId,
+            user_id: userId,
+            message: text,
+            booking_data: bookingData,
+            current_section: currentSection,
+            booking_ref: bookingRef
+        })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        removeTyping();
+        addMessage('bot', (data.reply || '').replace(/\n/g, '<br>'));
+        bookingData = data.booking_data || bookingData;
+        currentSection = data.current_section || currentSection;
+        bookingRef = data.booking_ref || bookingRef;
+        sessionId = data.session_id || sessionId;
+        try { updateStepper(currentSection); } catch(e) {}
+        input.disabled = false;
+        document.getElementById('cw-send').disabled = false;
+        input.focus();
+    })
+    .catch(function(err) {
+        removeTyping();
+        addMessage('bot', '❌ Connection error. Please check if the server is running.');
+        input.disabled = false;
+        document.getElementById('cw-send').disabled = false;
+        input.focus();
+    });
+}
+</script>
+
+</body>
+</html>

@@ -18,6 +18,26 @@ def _generate_booking_ref() -> str:
 
 
 @tool
+def store_field(field_name: str, field_value: str) -> dict:
+    """Store a collected booking field value. You MUST call this for every piece of information the user provides.
+
+    Valid field_name values:
+    - Shipper: shipper_name, shipper_contact, shipper_phone, shipper_email, pickup_address, pickup_date, pickup_time
+    - Consignee: consignee_name, consignee_contact, consignee_phone, consignee_email, delivery_address, preferred_delivery_date
+    - Shipment: goods_type, num_packages, total_weight_kg, dimensions, total_volume_cbm, declared_value, is_fragile, is_perishable, special_handling
+    - Service: service_type, transport_mode
+    - Documentation: invoice_number, packing_list, eway_bill
+    - Payment: payment_mode, insurance_opted, insured_value
+    - Additional: delivery_confirmation, return_option, remarks
+
+    Args:
+        field_name: The exact field name from the list above.
+        field_value: The value provided by the user.
+    """
+    return {"stored": True, "field": field_name, "value": field_value}
+
+
+@tool
 def save_booking(booking_data: dict) -> dict:
     """Save a confirmed booking to the database.
     Args:
